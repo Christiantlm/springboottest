@@ -16,8 +16,7 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String hello() {
-        return "Hello world! </br> " +
-                "<div align=\"center\">--周晓琴</div>";
+        return "Hello world!";
     }
 
     @Override

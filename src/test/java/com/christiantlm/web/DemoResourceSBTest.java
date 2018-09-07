@@ -3,11 +3,15 @@ package com.christiantlm.web;
 import com.alibaba.fastjson.JSON;
 import com.christiantlm.model.User;
 import com.christiantlm.service.DemoService;
-import org.junit.Before;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
-import org.mockito.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,10 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created by dot.zhou on 2018/9/1.
  */
-//@RunWith(SpringRunner.class)
-//@ContextConfiguration
-//@WebAppConfiguration(value = "src/main/java/com/christiantlm/web")
-public class DemoResourceTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+public class DemoResourceSBTest {
 
     List<User> expectedOriginal = new ArrayList<>(
             Arrays.asList(
@@ -35,31 +39,16 @@ public class DemoResourceTest {
                     new User("2", "bbb"),
                     new User("3", "ccc")));
 
+    @Autowired
     private MockMvc mvc;
-
-
-    @InjectMocks
-    private DemoResource demoResource;
 
     @Mock
     private DemoService demoService;
-
-    @Before
-    public void setup() {
-
-        // Process mock annotations
-        MockitoAnnotations.initMocks(this);
-
-        // Setup Spring test in standalone mode
-        this.mvc = MockMvcBuilders.standaloneSetup(demoResource).build();
-    }
 
     @Test
     public void hello() throws Exception {
 
         String expectResult = "Hello world!";
-
-        when(demoService.hello()).thenReturn(expectResult);
 
         mvc.perform(get("/hello"))
                 .andExpect(status().isOk())
@@ -68,7 +57,6 @@ public class DemoResourceTest {
 
     @Test
     public void getUsers() throws Exception {
-
         mvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(JSON.toJSONString(expectedOriginal)));
@@ -77,23 +65,18 @@ public class DemoResourceTest {
     @Test
     public void getUsersById() throws Exception {
 
-        Integer id = 2;//RandomUtils.nextInt(0, 3);
+        Integer id = RandomUtils.nextInt(0, 3);
         String expected = JSON.toJSONString(expectedOriginal.stream()
                 .filter(u -> String.valueOf(id).equals(u.getUserid()))
                 .collect(Collectors.toList()));
 
         when(demoService.getUsers(id.toString()))
-                .thenReturn(Collections.singletonList(new User("2", "bbb")));
+                .thenReturn(Collections.singletonList(new User("222", "aabb")));
 
         mvc.perform(get("/users/" + id))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
-        mvc.perform(get("/users/" + id))
-                .andExpect(status().isOk())
-                .andExpect(content().json(expected));
 
-        MockingDetails md = Mockito.mockingDetails(demoService);
-        System.out.println("mock times:" + md.getInvocations().size());
         System.out.println("<<<<<<<id:" + id + ",result:" + expected);
     }
 
